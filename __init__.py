@@ -3,20 +3,22 @@ from flask_restplus import Api, Resource, Namespace, reqparse
 from werkzeug.exceptions import HTTPException
 import json
 from servey_db_identity import Schema
-from auth import URL
 import authentication
 from os import environ
-
+from typing import Final
 try:
-    discord_redirect = environ["SERVEY_API_DISCORD_REDIRECT"]
-    discord_id = environ["SERVEY_API_DISCORD_ID"]
-    discord_secret = environ["SERVEY_API_DISCORD_SECRET"]
+    DISCORD_REDIRECT: Final = environ["SERVEY_API_DISCORD_REDIRECT"]
+    DISCORD_ID: Final = environ["SERVEY_API_DISCORD_ID"]
+    DISCORD_SECRET: Final = environ["SERVEY_API_DISCORD_SECRET"]
+    DATABASE_URL: Final = environ["SERVEY_DB_URL"]
+
 except KeyError:
     raise EnvironmentError("The following environment variables must be set: "
-                           "SERVEY_API_DISCORD_REDIRECT, SERVEY_API_DISCORD_ID, SERVEY_API_DISCORD_SECRET")
+                           "SERVEY_API_DISCORD_REDIRECT, SERVEY_API_DISCORD_ID, SERVEY_API_DISCORD_SECRET, "
+                           "SERVEY_DB_URL") from None
 
-identity = Schema(URL)
-discord = authentication.Discord(discord_redirect, discord_id, discord_secret)
+identity = Schema(DATABASE_URL)
+discord = authentication.Discord(DISCORD_REDIRECT, DISCORD_ID, DISCORD_SECRET)
 
 name = "ServeyMcServeface API (Identity)"
 app = Flask(name)
