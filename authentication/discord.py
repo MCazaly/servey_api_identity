@@ -1,7 +1,6 @@
 import requests
-from typing import Final
 
-API: Final = "https://discordapp.com/api/v6"
+api = "https://discordapp.com/api/v6"
 
 
 class Discord(object):
@@ -25,7 +24,7 @@ class Discord(object):
         }
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-        request = requests.post(f"{API}/oauth2/token", data, headers)
+        request = requests.post(f"{api}/oauth2/token", data, headers)
         request.raise_for_status()
         result = request.json()
 
@@ -34,6 +33,6 @@ class Discord(object):
     @staticmethod
     def get_user(token):
         headers = {"Authorization": f"Bearer {token}"}
-        request = requests.get(f"{API}/users/@me", headers=headers)
+        request = requests.get(f"{api}/users/@me", headers=headers)
         request.raise_for_status()
         return request.json()
