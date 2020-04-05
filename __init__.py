@@ -65,6 +65,7 @@ class DiscordAuthenticate(Resource):
         code = args["code"]
         token = discord.exchange_code(code)
         user = discord.get_user(token)
+        identity.ensure_user(user["id"])
         identity.set_auth_discord(user["id"], token)
 
         return "Success!"
