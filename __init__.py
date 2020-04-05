@@ -2,8 +2,8 @@ from flask import Flask
 from flask_restplus import Api, Resource, Namespace, reqparse
 from werkzeug.exceptions import HTTPException
 import json
-from servey_db_identity import Schema
-import authentication
+from .servey_db_identity import Schema
+from . import authentication
 from os import environ
 from typing import Final
 try:
