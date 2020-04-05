@@ -5,6 +5,9 @@ import json
 from .servey_db_identity import Schema
 from . import authentication
 from os import environ
+from werkzeug.contrib.fixers import ProxyFix
+
+
 try:
     discord_redirect = environ["SERVEY_API_DISCORD_REDIRECT"]
     discord_id = environ["SERVEY_API_DISCORD_ID"]
@@ -21,6 +24,7 @@ discord = authentication.Discord(discord_redirect, discord_id, discord_secret)
 
 name = "ServeyMcServeface API (Identity)"
 app = Flask(name)
+app.wsgi_app = ProxyFix(app.wsgi_app)
 
 
 @app.errorhandler(HTTPException)
