@@ -1,14 +1,18 @@
 import requests
+from typing import Final
+
+API: Final = "https://discordapp.com/api/v6"
 
 
 class Discord(object):
     redirect = None
-    client_id = "584422682100105300"
-    client_secret = "Wyg6tKZCt97B6G06QVMgDq0EesBDUBh0"
-    api = "https://discordapp.com/api/v6"
+    client_id = None
+    client_secret = None
 
-    def __init__(self, redirect):
+    def __init__(self, redirect, client_id, client_secret):
         self.redirect = redirect
+        self.client_id = client_id
+        self.client_secret = client_secret
 
     def exchange_code(self, code):
         data = {
@@ -21,14 +25,15 @@ class Discord(object):
         }
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-        request = requests.post(f"{self.api}/oauth2/token", data, headers)
+        request = requests.post(f"{API}/oauth2/token", data, headers)
         request.raise_for_status()
         result = request.json()
 
         return result["access_token"]
 
-    def get_user(self, token):
+    @staticmethod
+    def get_user(token):
         headers = {"Authorization": f"Bearer {token}"}
-        request = requests.get(f"{self.api}/users/@me", headers=headers)
+        request = requests.get(f"{API}/users/@me", headers=headers)
         request.raise_for_status()
         return request.json()

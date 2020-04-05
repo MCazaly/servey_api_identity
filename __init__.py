@@ -5,9 +5,18 @@ import json
 from servey_db_identity import Schema
 from auth import URL
 import authentication
+from os import environ
+
+try:
+    discord_redirect = environ["SERVEY_API_DISCORD_REDIRECT"]
+    discord_id = environ["SERVEY_API_DISCORD_ID"]
+    discord_secret = environ["SERVEY_API_DISCORD_SECRET"]
+except KeyError:
+    raise EnvironmentError("The following environment variables must be set: "
+                           "SERVEY_API_DISCORD_REDIRECT, SERVEY_API_DISCORD_ID, SERVEY_API_DISCORD_SECRET")
 
 identity = Schema(URL)
-discord = authentication.Discord("http://localhost:5000/auth/discord/authenticate")
+discord = authentication.Discord(discord_redirect, discord_id, discord_secret)
 
 name = "ServeyMcServeface API (Identity)"
 app = Flask(name)
