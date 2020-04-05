@@ -1,3 +1,4 @@
+import flask
 from flask import Flask
 from flask_restplus import Api, Resource, Namespace, reqparse
 from werkzeug.exceptions import HTTPException
@@ -5,7 +6,6 @@ import json
 from .servey_db_identity import Schema
 from . import authentication
 from os import environ
-from werkzeug.contrib.fixers import ProxyFix
 
 
 try:
@@ -24,7 +24,6 @@ discord = authentication.Discord(discord_redirect, discord_id, discord_secret)
 
 name = "ServeyMcServeface API (Identity)"
 app = Flask(name)
-app.wsgi_app = ProxyFix(app.wsgi_app)
 
 
 @app.errorhandler(HTTPException)
@@ -39,7 +38,15 @@ def exception_handler(exception):
     return response
 
 
-api = Api(app, doc="/")
+class SecureApi(Api):
+    @property
+    def specs_url(self):
+        # HTTPS monkey patch
+        scheme = "http" if ":5000" in self.base_url else "https"
+        return flask.url_for(self.endpoint("specs"), _external=True, _scheme=scheme)
+
+
+api = SecureApi(app, doc="/")
 api.title = name
 
 code_parser = reqparse.RequestParser()
