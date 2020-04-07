@@ -1,6 +1,6 @@
 import flask
 from flask import Flask
-from flask_restplus import Api, Resource, Namespace, reqparse
+from flask_restplus import Api, Resource, Namespace
 from werkzeug.exceptions import HTTPException
 import json
 from .servey_db_identity import Schema
@@ -49,20 +49,15 @@ class SecureApi(Api):
 api = SecureApi(app, doc="/")
 api.title = name
 
-code_parser = reqparse.RequestParser()
-code_parser.add_argument("code", type=str, help="Discord user authentication code")
-
-
 auth = Namespace("auth")
 api.add_namespace(auth)
 
 
-@auth.route("/discord/authenticate")
+@auth.route("/discord/authenticate/<string:code>")
 class DiscordAuthenticate(Resource):
+    @staticmethod
     @api.doc("Exchange a Discord authentication code for an OAuth2 token.")
-    def get(self):
-        args = code_parser.parse_args()
-        code = args["code"]
+    def get(code):
         token = discord.exchange_code(code)
         user = discord.get_user(token)
         identity.ensure_user(user["id"])
