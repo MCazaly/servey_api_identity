@@ -63,7 +63,9 @@ class DiscordAuthenticate(Resource):
         identity.ensure_user(user["id"])
         identity.set_auth_discord(user["id"], token)
 
-        return "Success!"
+        return {
+            "api_token": identity.get_api_token(user["id"])
+        }
 
 
 def main():
