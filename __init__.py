@@ -6,6 +6,7 @@ import json
 from .servey_db_identity import Schema
 from . import authentication
 from os import environ
+from flask_cors import CORS
 
 
 try:
@@ -24,6 +25,7 @@ discord = authentication.Discord(discord_redirect, discord_id, discord_secret)
 
 name = "ServeyMcServeface API (Identity)"
 app = Flask(name)
+CORS(app)
 
 
 @app.errorhandler(HTTPException)
