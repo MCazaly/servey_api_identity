@@ -6,7 +6,6 @@ import json
 from .servey_db_identity import Schema
 from . import authentication
 from os import environ
-from flask_cors import CORS
 
 
 try:
@@ -22,7 +21,6 @@ identity = Schema(database_url)
 
 name = "ServeyMcServeface API (Identity)"
 app = Flask(name)
-CORS(app)
 
 
 @app.errorhandler(HTTPException)
