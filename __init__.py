@@ -1,6 +1,6 @@
 import flask
 from flask import Flask
-from flask_restplus import Api, Resource, Namespace
+from flask_restplus import Api, Resource, Namespace, reqparse
 from werkzeug.exceptions import HTTPException
 import json
 from .servey_db_identity import Schema
@@ -48,6 +48,9 @@ class SecureApi(Api):
         return flask.url_for(self.endpoint("specs"), _external=True, _scheme=scheme)
 
 
+code_parser = reqparse.RequestParser()
+code_parser.add_argument("code", type=str, help="Discord user authentication code")
+
 api = SecureApi(app, doc="/")
 api.title = name
 
@@ -68,6 +71,17 @@ class DiscordAuthenticate(Resource):
         return {
             "api_token": identity.get_api_token(user["id"])
         }
+
+
+@auth.route("/discord/authenticate/legacy")
+class DiscordAuthenticateLegacy(Resource):
+    @staticmethod
+    @api.doc("Direct Discord code exchange using URL parameter.")
+    def get():
+        args = code_parser.parse_args()
+        code = args["code"]
+
+        return DiscordAuthenticate.get(code)
 
 
 def main():
