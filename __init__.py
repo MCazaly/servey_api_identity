@@ -100,12 +100,12 @@ class User(Resource):
 def discord_authenticate(code, redirect):
     discord = authentication.Discord(redirect, discord_id, discord_secret)
     token = discord.exchange_code(code)
-    user = discord.get_user(token)
-    identity.ensure_user(user["id"])
-    identity.set_auth_discord(user["id"], token)
+    discord_user = discord.get_user(token)
+    identity.ensure_user(discord_user["id"], ip_addr=request.remote_addr)
+    identity.set_auth_discord(discord_user["id"], token, ip_addr=request.remote_addr)
 
     return {
-        "api_token": identity.get_api_token(user["id"])
+        "api_token": identity.get_api_token(discord_user["id"])
     }
 
 
