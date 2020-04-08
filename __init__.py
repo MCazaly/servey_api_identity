@@ -10,7 +10,7 @@ from flask_cors import CORS
 
 
 try:
-    discord_redirect = environ["SERVEY_API_DISCORD_REDIRECT"]
+    default_redirect = environ["SERVEY_API_DISCORD_REDIRECT"]
     discord_id = environ["SERVEY_API_DISCORD_ID"]
     discord_secret = environ["SERVEY_API_DISCORD_SECRET"]
     database_url = environ["SERVEY_DB_URL"]
@@ -21,7 +21,6 @@ except KeyError:
                            "SERVEY_DB_URL") from None
 
 identity = Schema(database_url)
-discord = authentication.Discord(discord_redirect, discord_id, discord_secret)
 
 name = "ServeyMcServeface API (Identity)"
 app = Flask(name)
@@ -58,11 +57,14 @@ auth = Namespace("auth")
 api.add_namespace(auth)
 
 
-@auth.route("/discord/authenticate/<string:code>")
+@auth.route("/discord/authenticate/<string:code>", defaults={"redirect": None})
+@auth.route("/discord/authenticate/<string:code>/<path:redirect>")
 class DiscordAuthenticate(Resource):
     @staticmethod
-    @api.doc("Exchange a Discord authentication code for an OAuth2 token.")
-    def get(code):
+    @api.doc("Exchange a Discord authentication code for an AssCo. API token.")
+    def post(code, redirect):
+        redirect = redirect or default_redirect
+        discord = authentication.Discord(redirect, discord_id, discord_secret)
         token = discord.exchange_code(code)
         user = discord.get_user(token)
         identity.ensure_user(user["id"])
@@ -81,7 +83,7 @@ class DiscordAuthenticateLegacy(Resource):
         args = code_parser.parse_args()
         code = args["code"]
 
-        return DiscordAuthenticate.get(code)
+        return DiscordAuthenticate.post(code, None)
 
 
 def main():
