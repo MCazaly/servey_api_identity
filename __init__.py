@@ -79,8 +79,11 @@ class DiscordAuthenticateLegacy(Resource):
     def get():
         args = code_parser.parse_args()
         code = args["code"]
-
-        return DiscordAuthenticate.post(code, request.base_url)
+        if ":5000" not in request.base_url:
+            redirect = request.base_url.replace("http://", "https://")
+        else:
+            redirect = request.base_url
+        return DiscordAuthenticate.post(code, redirect)
 
 
 def main():
