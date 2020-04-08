@@ -1,5 +1,5 @@
 import flask
-from flask import Flask
+from flask import Flask, request
 from flask_restplus import Api, Resource, Namespace, reqparse
 from werkzeug.exceptions import HTTPException
 import json
@@ -10,15 +10,13 @@ from flask_cors import CORS
 
 
 try:
-    default_redirect = environ["SERVEY_API_DISCORD_REDIRECT"]
     discord_id = environ["SERVEY_API_DISCORD_ID"]
     discord_secret = environ["SERVEY_API_DISCORD_SECRET"]
     database_url = environ["SERVEY_DB_URL"]
 
 except KeyError:
     raise EnvironmentError("The following environment variables must be set: "
-                           "SERVEY_API_DISCORD_REDIRECT, SERVEY_API_DISCORD_ID, SERVEY_API_DISCORD_SECRET, "
-                           "SERVEY_DB_URL") from None
+                           "SERVEY_API_DISCORD_ID, SERVEY_API_DISCORD_SECRET, SERVEY_DB_URL") from None
 
 identity = Schema(database_url)
 
@@ -63,7 +61,6 @@ class DiscordAuthenticate(Resource):
     @staticmethod
     @api.doc("Exchange a Discord authentication code for an AssCo. API token.")
     def post(code, redirect):
-        redirect = redirect or default_redirect
         discord = authentication.Discord(redirect, discord_id, discord_secret)
         token = discord.exchange_code(code)
         user = discord.get_user(token)
@@ -83,7 +80,7 @@ class DiscordAuthenticateLegacy(Resource):
         args = code_parser.parse_args()
         code = args["code"]
 
-        return DiscordAuthenticate.post(code, None)
+        return DiscordAuthenticate.post(code, request.base_url)
 
 
 def main():
