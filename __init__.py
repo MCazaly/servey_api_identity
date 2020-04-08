@@ -58,16 +58,8 @@ api.add_namespace(auth)
 class DiscordAuthenticate(Resource):
     @staticmethod
     @api.doc("Exchange a Discord authentication code for an AssCo. API token.")
-    def post(code, redirect):
-        discord = authentication.Discord(redirect, discord_id, discord_secret)
-        token = discord.exchange_code(code)
-        user = discord.get_user(token)
-        identity.ensure_user(user["id"])
-        identity.set_auth_discord(user["id"], token)
-
-        return {
-            "api_token": identity.get_api_token(user["id"])
-        }
+    def get(code, redirect):
+        return discord_authenticate(code, redirect)
 
 
 @auth.route("/discord/authenticate/legacy")
@@ -81,7 +73,19 @@ class DiscordAuthenticateLegacy(Resource):
             redirect = request.base_url.replace("http://", "https://")
         else:
             redirect = request.base_url
-        return DiscordAuthenticate.post(code, redirect)
+        return discord_authenticate(code, redirect)
+
+
+def discord_authenticate(code, redirect):
+    discord = authentication.Discord(redirect, discord_id, discord_secret)
+    token = discord.exchange_code(code)
+    user = discord.get_user(token)
+    identity.ensure_user(user["id"])
+    identity.set_auth_discord(user["id"], token)
+
+    return {
+        "api_token": identity.get_api_token(user["id"])
+    }
 
 
 def main():
