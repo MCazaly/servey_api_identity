@@ -17,8 +17,6 @@ except KeyError:
     raise EnvironmentError("The following environment variables must be set: "
                            "SERVEY_API_DISCORD_ID, SERVEY_API_DISCORD_SECRET, SERVEY_DB_URL") from None
 
-identity = Schema(database_url)
-
 name = "ServeyMcServeface API (Identity)"
 app = Flask(name)
 
@@ -92,20 +90,26 @@ class User(Resource):
     @staticmethod
     @api.doc("User information")
     def get(token):
+        identity = Schema(database_url)
+        user_id = identity.get_api_user(token=token)
+        identity.close()
         return {
-            "discord_id": identity.get_api_user(token=token)
+            "discord_id": user_id
         }
 
 
 def discord_authenticate(code, redirect):
+    identity = Schema(database_url)
     discord = authentication.Discord(redirect, discord_id, discord_secret)
     token = discord.exchange_code(code)
     discord_user = discord.get_user(token)
     identity.ensure_user(discord_user["id"], ip_addr=request.remote_addr)
     identity.set_auth_discord(discord_user["id"], token, ip_addr=request.remote_addr)
+    api_token = identity.get_api_token(discord_user["id"])
+    identity.close()
 
     return {
-        "api_token": identity.get_api_token(discord_user["id"])
+        "api_token": api_token
     }
 
 
