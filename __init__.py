@@ -1,6 +1,6 @@
 import flask
 from flask import Flask, request
-from flask_restplus import Api, Resource, Namespace, reqparse
+from flask_restplus import Api, Resource, Namespace, reqparse, fields
 from werkzeug.exceptions import HTTPException
 import json
 from .servey_db_identity import Schema
@@ -52,13 +52,22 @@ api.title = name
 auth = Namespace("auth")
 api.add_namespace(auth)
 
+discord_fields = api.model("discord_auth",
+                           {
+                               "code": fields.String(required=True, description="Discord authentication code"),
+                               "redirect": fields.String(required=False, description="Authorized redirect URI")
+                           })
 
-@auth.route("/discord/authenticate/<string:code>", defaults={"redirect": None})
-@auth.route("/discord/authenticate/<string:code>/<path:redirect>")
+
+@auth.route("/discord/authenticate")
+@auth.expect()
 class DiscordAuthenticate(Resource):
     @staticmethod
     @api.doc("Exchange a Discord authentication code for an AssCo. API token.")
-    def get(code, redirect):
+    @api.expect(discord_fields)
+    def post():
+        code = request.json.get("code")
+        redirect = request.json.get("redirect")
         return discord_authenticate(code, redirect)
 
 
