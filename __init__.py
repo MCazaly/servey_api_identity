@@ -51,6 +51,8 @@ api.title = name
 
 auth = Namespace("auth")
 api.add_namespace(auth)
+user = Namespace("user")
+api.add_namespace(user)
 
 discord_fields = api.model("discord_auth",
                            {
@@ -83,6 +85,16 @@ class DiscordAuthenticateLegacy(Resource):
         else:
             redirect = request.base_url
         return discord_authenticate(code, redirect)
+
+
+@user.route("/<string:token>")
+class User(Resource):
+    @staticmethod
+    @api.doc("User information")
+    def get(token):
+        return {
+            "discord_id": identity.get_api_user(token=token)
+        }
 
 
 def discord_authenticate(code, redirect):
